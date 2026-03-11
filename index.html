@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroFlow - Visualización Cerebral Interactiva</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header con navegación -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <span>NeuroFlow</span>
+                </div>
+                <nav class="header-nav">
+                    <button class="nav-btn active" data-view="visualization">Visualización</button>
+                    <button class="nav-btn" data-view="analysis">Análisis</button>
+                    <button class="nav-btn" data-view="recommendations">Recomendaciones</button>
+                    <button class="nav-btn" data-view="settings">Configuración</button>
+                </nav>
+                <div class="user-profile">
+                    <div class="brain-activity">
+                        <i class="fas fa-bolt"></i>
+                        <span>94% Actividad</span>
+                    </div>
+                    <div class="neural-connections">
+                        <i class="fas fa-network-wired"></i>
+                        <span>2.3K Conexiones</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Vista de Visualización 3D -->
+            <div class="view visualization-view active">
+                <div class="visualization-container">
+                    <div id="neural-canvas" class="neural-canvas"></div>
+                    <div class="visualization-controls">
+                        <div class="control-panel">
+                            <div class="control-group">
+                                <label>Modo Visual:</label>
+                                <select id="visual-mode">
+                                    <option value="3d">3D Interactivo</option>
+                                    <option value="2d">2D Mapa</option>
+                                    <option value="wave">Ondas Cerebrales</option>
+                                    <option value="network">Red Neuronal</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Foco Cognitivo:</label>
+                                <input type="range" id="cognitive-focus" min="0" max="100" value="75">
+                            </div>
+                            <div class="control-group">
+                                <label>Intensidad:</label>
+                                <input type="range" id="intensity" min="0" max="100" value="60">
+                            </div>
+                            <div class="control-group">
+                                <label>Regiones:</label>
+                                <div class="region-toggles">
+                                    <label><input type="checkbox" checked> Frontal</label>
+                                    <label><input type="checkbox" checked> Parietal</label>
+                                    <label><input type="checkbox" checked> Temporal</label>
+                                    <label><input type="checkbox" checked> Occipital</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <button id="play-pause" class="btn primary">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                            <button id="reset-view" class="btn secondary">
+                                <i class="fas fa-sync"></i> Reset
+                            </button>
+                            <button id="export-data" class="btn accent">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="visualization-stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Frecuencia Alpha</div>
+                        <div class="stat-value">12.5 Hz</div>
+                        <div class="stat-bar">
+                            <div class="stat-progress" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Frecuencia Beta</div>
+                        <div class="stat-value">25.3 Hz</div>
+                        <div class="stat-progress" style="width: 82%"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Coherencia</div>
+                        <div class="stat-value">87%</div>
+                        <div class="stat-progress" style="width: 87%"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Asimetría</div>
+                        <div class="stat-value">L: 0.12 | R: 0.08</div>
+                        <div class="stat-progress" style="width: 45%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista de Análisis -->
+            <div class="view analysis-view hidden">
+                <div class="analysis-container">
+                    <h2>Análisis Cognitivo Profundo</h2>
+                    <div class="analysis-tabs">
+                        <button class="tab-btn active" data-tab="patterns">Patrones</button>
+                        <button class="tab-btn" data-tab="trends">Tendencias</button>
+                        <button class="tab-btn" data-tab="comparisons">Comparaciones</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="patterns">
+                        <div class="pattern-grid">
+                            <div class="pattern-card">
+                                <div class="pattern-header">
+                                    <i class="fas fa-wave-square"></i>
+                                    <h3>Ondas Theta</h3>
+                                </div>
+                                <div class="pattern-content">
+                                    <p>Patrón de ondas theta detectado durante estados de relajación profunda y meditación.</p>
+                                    <div class="pattern-metrics">
+                                        <div>Frecuencia: 4-8 Hz</div>
+                                        <div>Amplitud: 45 μV</div>
+                                        <div>Duración: 2.3 min</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-card">
+                                <div class="pattern-header">
+                                    <i class="fas fa-bolt"></i>
+                                    <h3>Descargas Gamma</h3>
+                                </div>
+                                <div class="pattern-content">
+                                    <p>Actividad gamma alta durante tareas cognitivas complejas y resolución de problemas.</p>
+                                    <div class="pattern-metrics">
+                                        <div>Frecuencia: 30-100 Hz</div>
+                                        <div>Amplitud: 12 μV</div>
+                                        <div>Duración: 45 seg</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pattern-card">
+                                <div class="pattern-header">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <h3>Coherencia Interhemisférica</h3>
+                                </div>
+                                <div class="pattern-content">
+                                    <p>Alta coherencia entre hemisferios durante estados de concentración.</p>
+                                    <div class="pattern-metrics">
+                                        <div>Coeficiente: 0.87</div>
+                                        <div>Región: Frontal</div>
+                                        <div>Tendencia: Ascendente</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="trends">
+                        <div class="trend-chart">
+                            <canvas id="trendCanvas" width="800" height="300"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="comparisons">
+                        <div class="comparison-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Métrica</th>
+                                        <th>Hoy</th>
+                                        <th>Promedio Semanal</th>
+                                        <th>Mejor Día</th>
+                                        <th>Cambio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Foco Atencional</td>
+                                        <td>94%</td>
+                                        <td>82%</td>
+                                        <td>96%</td>
+                                        <td><span class="positive">+12%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Memoria de Trabajo</td>
+                                        <td>87%</td>
+                                        <td>79%</td>
+                                        <td>91%</td>
+                                        <td><span class="positive">+8%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Velocidad de Procesamiento</td>
+                                        <td>76%</td>
+                                        <td>71%</td>
+                                        <td>83%</td>
+                                        <td><span class="positive">+5%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Flexibilidad Cognitiva</td>
+                                        <td>68%</td>
+                                        <td>72%</td>
+                                        <td>85%</td>
+                                        <td><span class="negative">-4%</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista de Recomendaciones -->
+            <div class="view recommendations-view hidden">
+                <div class="recommendations-container">
+                    <h2>Recomendaciones Cognitivas</h2>
+                    <div class="recommendation-types">
+                        <button class="rec-type-btn active" data-type="immediate">Inmediatas</button>
+                        <button class="rec-type-btn" data-type="daily">Diarias</button>
+                        <button class="rec-type-btn" data-type="weekly">Semanales</button>
+                        <button class="rec-type-btn" data-type="longterm">A Largo Plazo</button>
+                    </div>
+                    
+                    <div class="recommendations-grid" id="recommendations-grid">
+                        <!-- Recomendaciones se añadirán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista de Configuración -->
+            <div class="view settings-view hidden">
+                <div class="settings-container">
+                    <h2>Configuración Avanzada</h2>
+                    
+                    <div class="settings-section">
+                        <h3>Visualización</h3>
+                        <div class="setting-item">
+                            <label>Resolución 3D</label>
+                            <select id="resolution-3d">
+                                <option>Alta (4K)</option>
+                                <option selected>Media (1080p)</option>
+                                <option>Baja (720p)</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Calidad de Renderizado</label>
+                            <select id="render-quality">
+                                <option>Alta</option>
+                                <option selected>Media</option>
+                                <option>Baja</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Animaciones</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>AI y Machine Learning</h3>
+                        <div class="setting-item">
+                            <label>Nivel de Personalización</label>
+                            <input type="range" id="ai-level" min="0" max="100" value="75">
+                        </div>
+                        <div class="setting-item">
+                            <label>Entrenamiento Continuo</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Notificaciones Inteligentes</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Privacidad</h3>
+                        <div class="setting-item">
+                            <label>Datos Anónimos</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>Exportar Datos</label>
+                            <button class="btn secondary">Exportar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>NeuroFlow</h3>
+                    <p>Plataforma de visualización cerebral interactiva</p>
+                    <p class="footer-version">v2.0.1</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Características</h3>
+                    <ul>
+                        <li>Visualización 3D</li>
+                        <li>Análisis en Tiempo Real</li>
+                        <li>IA Adaptativa</li>
+                        <li>Redes Neuronales</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Conecta</h3>
+                    <div class="social-links">
+                        <i class="fab fa-twitter"></i>
+                        <i class="fab fa-github"></i>
+                        <i class="fab fa-discord"></i>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
