@@ -50,7 +50,13 @@ class NeuroFlowApp {
         this.resolution3D = document.getElementById('resolution-3d');
         this.renderQuality = document.getElementById('render-quality');
         this.aiLevel = document.getElementById('ai-level');
-        this.animationToggle = document.querySelector('#settings input[type="checkbox"]');
+        
+        // Corregido: Buscar el toggle switch correctamente
+        this.animationToggle = document.querySelector('#settings .toggle-switch input[type="checkbox"]');
+        if (!this.animationToggle) {
+            console.warn('Animation toggle not found, falling back to default');
+            this.animationToggle = { checked: true };
+        }
     }
 
     setupEventListeners() {
@@ -116,54 +122,99 @@ class NeuroFlowApp {
             this.updateAILevel(e.target.value);
         });
 
-        this.animationToggle.addEventListener('change', (e) => {
-            this.toggleAnimations(e.target.checked);
-        });
+        // Corregido: Manejar el toggle switch de forma segura
+        if (this.animationToggle) {
+            this.animationToggle.addEventListener('change', (e) => {
+                this.toggleAnimations(e.target.checked);
+            });
+        }
     }
 
     initializeThreeJS() {
-        // Scene setup
-        this.threeScene = new THREE.Scene();
-        this.threeScene.background = new THREE.Color(0x0a0a1e);
-        
-        // Camera setup
-        this.threeCamera = new THREE.PerspectiveCamera(
-            75,
-            this.neuralCanvas.clientWidth / this.neuralCanvas.clientHeight,
-            0.1,
-            1000
-        );
-        this.threeCamera.position.z = 5;
-        
-        // Renderer setup
-        this.threeRenderer = new THREE.WebGLRenderer({ antialias: true });
-        this.threeRenderer.setSize(this.neuralCanvas.clientWidth, this.neuralCanvas.clientHeight);
-        this.threeRenderer.setPixelRatio(window.devicePixelRatio);
-        this.neuralCanvas.appendChild(this.threeRenderer.domElement);
-        
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 2);
-        this.threeScene.add(ambientLight);
-        
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(5, 5, 5);
-        this.threeScene.add(pointLight);
-        
-        // Create neurons
-        this.createNeurons();
-        
-        // Handle resize
-        window.addEventListener('resize', () => {
-            this.threeCamera.aspect = this.neuralCanvas.clientWidth / this.neuralCanvas.clientHeight;
-            this.threeCamera.updateProjectionMatrix();
+        try {
+            // Scene setup
+            this.threeScene = new THREE.Scene();
+            this.threeScene.background = new THREE.Color(0x0a0a1e);
+            
+            // Camera setup
+            this.threeCamera = new THREE.PerspectiveCamera(
+                75,
+                this.neuralCanvas.clientWidth / this.neuralCanvas.clientHeight,
+                0.1,
+                1000
+            );
+            this.threeCamera.position.z = 5;
+            
+            // Renderer setup
+            this.threeRenderer = new THREE.WebGLRenderer({ antialias: true });
             this.threeRenderer.setSize(this.neuralCanvas.clientWidth, this.neuralCanvas.clientHeight);
-        });
+            this.threeRenderer.setPixelRatio(window.devicePixelRatio);
+            this.neuralCanvas.appendChild(this.threeRenderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            this.threeScene.add(ambientLight);
+            
+            const pointLight = new THREE.PointLight(0xffffff, 1);
+            pointLight.position.set(5, 5, 5);
+            this.threeScene.add(pointLight);
+            
+            // Create neurons
+            this.createNeurons();
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                this.threeCamera.aspect = this.neuralCanvas.clientWidth / this.neuralCanvas.clientHeight;
+                this.threeCamera.updateProjectionMatrix();
+                this.threeRenderer.setSize(this.neuralCanvas.clientWidth, this.neuralCanvas.clientHeight);
+            });
+            
+            // Start animation
+            this.animate();
+        } catch (error) {
+            console.error('Three.js initialization failed:', error);
+            this.fallbackVisualization();
+        }
+    }
+
+    fallbackVisualization() {
+        // Create a simple canvas fallback
+        const canvas = document.createElement('canvas');
+        canvas.width = this.neuralCanvas.clientWidth;
+        canvas.height = this.neuralCanvas.clientHeight;
+        canvas.style.background = '#1a1a2e';
+        this.neuralCanvas.appendChild(canvas);
         
-        // Start animation
-        this.animate();
+        const ctx = canvas.getContext('2d');
+        
+        // Draw simple animation
+        let time = 0;
+        const animate = () => {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw some circles
+            for (let i = 0; i < 20; i++) {
+                const x = Math.sin(time * 0.001 + i) * 100 + canvas.width / 2;
+                const y = Math.cos(time * 0.001 + i) * 100 + canvas.height / 2;
+                const radius = 20 + Math.sin(time * 0.002 + i) * 10;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${(time * 0.1 + i * 20) % 360}, 70%, 60%)`;
+                ctx.fill();
+            }
+            
+            time++;
+            requestAnimationFrame(animate);
+        };
+        
+        animate();
     }
 
     createNeurons() {
+        if (!this.threeScene) return;
+        
         const neuronGeometry = new THREE.SphereGeometry(0.1, 32, 32);
         const neuronMaterial = new THREE.MeshPhongMaterial({ 
             color: 0x8b5cf6,
@@ -191,6 +242,8 @@ class NeuroFlowApp {
     }
 
     createConnections() {
+        if (!this.threeScene) return;
+        
         const lineMaterial = new THREE.LineBasicMaterial({ 
             color: 0x6366f1,
             opacity: 0.6,
@@ -216,7 +269,7 @@ class NeuroFlowApp {
     animate() {
         this.animationId = requestAnimationFrame(() => this.animate());
         
-        if (this.isPlaying) {
+        if (this.isPlaying && this.threeScene) {
             // Animate neurons
             this.neurons.forEach((neuron, index) => {
                 neuron.rotation.x += 0.01;
@@ -227,13 +280,17 @@ class NeuroFlowApp {
             });
         }
         
-        this.threeRenderer.render(this.threeScene, this.threeCamera);
+        if (this.threeRenderer && this.threeScene && this.threeCamera) {
+            this.threeRenderer.render(this.threeScene, this.threeCamera);
+        }
     }
 
     updateVisualization() {
         // Clear existing scene
-        while(this.threeScene.children.length > 2) {
-            this.threeScene.remove(this.threeScene.children[2]);
+        if (this.threeScene) {
+            while(this.threeScene.children.length > 2) {
+                this.threeScene.remove(this.threeScene.children[2]);
+            }
         }
         
         // Recreate based on visual mode
@@ -254,6 +311,8 @@ class NeuroFlowApp {
     }
 
     create2DMap() {
+        if (!this.threeScene) return;
+        
         const geometry = new THREE.PlaneGeometry(10, 10);
         const material = new THREE.MeshBasicMaterial({ 
             color: 0x1e293b,
@@ -264,6 +323,8 @@ class NeuroFlowApp {
     }
 
     createBrainWaves() {
+        if (!this.threeScene) return;
+        
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
         const numPoints = 1000;
@@ -287,6 +348,8 @@ class NeuroFlowApp {
     }
 
     createNeuralNetwork() {
+        if (!this.threeScene) return;
+        
         const nodeGeometry = new THREE.SphereGeometry(0.05, 16, 16);
         const nodeMaterial = new THREE.MeshBasicMaterial({ color: 0x10b981 });
         
@@ -324,7 +387,9 @@ class NeuroFlowApp {
     updateIntensity() {
         // Update visualization intensity
         this.neurons.forEach(neuron => {
-            neuron.material.emissiveIntensity = this.intensity / 100;
+            if (neuron.material) {
+                neuron.material.emissiveIntensity = this.intensity / 100;
+            }
         });
     }
 
@@ -336,14 +401,18 @@ class NeuroFlowApp {
 
     resetVisualization() {
         // Reset camera and scene
-        this.threeCamera.position.set(0, 0, 5);
-        this.threeCamera.lookAt(0, 0, 0);
+        if (this.threeCamera) {
+            this.threeCamera.position.set(0, 0, 5);
+            this.threeCamera.lookAt(0, 0, 0);
+        }
         
         // Clear and recreate
-        while(this.threeScene.children.length > 2) {
-            this.threeScene.remove(this.threeScene.children[2]);
+        if (this.threeScene) {
+            while(this.threeScene.children.length > 2) {
+                this.threeScene.remove(this.threeScene.children[2]);
+            }
+            this.createNeurons();
         }
-        this.createNeurons();
     }
 
     exportData() {
@@ -503,7 +572,7 @@ class NeuroFlowApp {
             resolution: this.resolution3D.value,
             quality: this.renderQuality.value,
             aiLevel: this.aiLevel.value,
-            animations: this.animationToggle.checked
+            animations: this.animationToggle?.checked
         });
         
         this.showNotification('Configuración actualizada');
@@ -515,10 +584,8 @@ class NeuroFlowApp {
     }
 
     toggleAnimations(enabled) {
-        if (enabled) {
-            this.threeRenderer.domElement.style.animation = 'pulse 2s infinite';
-        } else {
-            this.threeRenderer.domElement.style.animation = 'none';
+        if (this.threeRenderer?.domElement) {
+            this.threeRenderer.domElement.style.animation = enabled ? 'pulse 2s infinite' : 'none';
         }
     }
 
@@ -597,6 +664,8 @@ class NeuroFlowApp {
 
     drawTrendChart() {
         const canvas = document.getElementById('trendCanvas');
+        if (!canvas) return;
+        
         const ctx = canvas.getContext('2d');
         const data = [65, 72, 78, 82, 85, 88, 92, 94];
         const labels = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom', 'Hoy'];
