@@ -51,11 +51,14 @@ class NeuroFlowApp {
         this.renderQuality = document.getElementById('render-quality');
         this.aiLevel = document.getElementById('ai-level');
         
-        // Corregido: Buscar el toggle switch correctamente
+        // Corregido: Obtener el toggle switch correctamente
         this.animationToggle = document.querySelector('#settings .toggle-switch input[type="checkbox"]');
         if (!this.animationToggle) {
-            console.warn('Animation toggle not found, falling back to default');
-            this.animationToggle = { checked: true };
+            console.warn('Animation toggle not found, creating default');
+            this.animationToggle = {
+                checked: true,
+                addEventListener: () => {} // Método vacío como fallback
+            };
         }
     }
 
@@ -123,10 +126,14 @@ class NeuroFlowApp {
         });
 
         // Corregido: Manejar el toggle switch de forma segura
-        if (this.animationToggle) {
+        if (this.animationToggle && typeof this.animationToggle.addEventListener === 'function') {
             this.animationToggle.addEventListener('change', (e) => {
                 this.toggleAnimations(e.target.checked);
             });
+        } else {
+            console.warn('Animation toggle event listener not available, using default behavior');
+            // Usar comportamiento por defecto
+            this.animationToggle = { checked: true };
         }
     }
 
