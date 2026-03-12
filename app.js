@@ -15,6 +15,7 @@ class NeuroFlowApp {
         this.neuralConnections = 2300;
         this.userLevel = 7;
         this.userPoints = 8450;
+        this.animationEnabled = true;
         
         this.initializeElements();
         this.setupEventListeners();
@@ -51,14 +52,53 @@ class NeuroFlowApp {
         this.renderQuality = document.getElementById('render-quality');
         this.aiLevel = document.getElementById('ai-level');
         
-        // Corregido: Obtener el toggle switch correctamente
-        this.animationToggle = document.querySelector('#settings .toggle-switch input[type="checkbox"]');
+        // Corregido: Buscar el toggle switch de forma más robusta
+        this.animationToggle = null;
+        this.findAnimationToggle();
+    }
+
+    findAnimationToggle() {
+        // Buscar en diferentes ubicaciones posibles
+        const possibleSelectors = [
+            '#settings .toggle-switch input[type="checkbox"]',
+            '.settings-section .toggle-switch input[type="checkbox"]',
+            'input[type="checkbox"].animation-toggle'
+        ];
+        
+        for (const selector of possibleSelectors) {
+            this.animationToggle = document.querySelector(selector);
+            if (this.animationToggle) {
+                console.log('Animation toggle found with selector:', selector);
+                break;
+            }
+        }
+        
         if (!this.animationToggle) {
             console.warn('Animation toggle not found, creating default');
-            this.animationToggle = {
-                checked: true,
-                addEventListener: () => {} // Método vacío como fallback
-            };
+            // Crear un toggle switch por defecto si no se encuentra
+            this.createDefaultToggle();
+        }
+    }
+
+    createDefaultToggle() {
+        // Crear un toggle switch en el DOM si no existe
+        const settingsSection = document.querySelector('.settings-section');
+        if (settingsSection) {
+            const toggleContainer = document.createElement('div');
+            toggleContainer.className = 'toggle-switch';
+            toggleContainer.innerHTML = `
+                <input type="checkbox" checked class="animation-toggle">
+                <span class="slider"></span>
+            `;
+            
+            // Insertar antes del primer elemento en la sección de configuración
+            const firstSetting = settingsSection.querySelector('.setting-item');
+            if (firstSetting) {
+                settingsSection.insertBefore(toggleContainer, firstSetting);
+            }
+            
+            this.animationToggle = toggleContainer.querySelector('input[type="checkbox"]');
+            this.animationToggle.checked = true; // Activar por defecto
         }
     }
 
@@ -125,15 +165,15 @@ class NeuroFlowApp {
             this.updateAILevel(e.target.value);
         });
 
-        // Corregido: Manejar el toggle switch de forma segura
-        if (this.animationToggle && typeof this.animationToggle.addEventListener === 'function') {
+        // Corregido: Manejar el toggle switch de forma segura y robusta
+        if (this.animationToggle) {
             this.animationToggle.addEventListener('change', (e) => {
-                this.toggleAnimations(e.target.checked);
+                this.animationEnabled = e.target.checked;
+                this.toggleAnimations(this.animationEnabled);
             });
         } else {
-            console.warn('Animation toggle event listener not available, using default behavior');
-            // Usar comportamiento por defecto
-            this.animationToggle = { checked: true };
+            console.warn('Animation toggle still not found, using default behavior');
+            this.animationEnabled = true; // Valor por defecto
         }
     }
 
@@ -579,7 +619,7 @@ class NeuroFlowApp {
             resolution: this.resolution3D.value,
             quality: this.renderQuality.value,
             aiLevel: this.aiLevel.value,
-            animations: this.animationToggle?.checked
+            animations: this.animationEnabled
         });
         
         this.showNotification('Configuración actualizada');
@@ -591,6 +631,7 @@ class NeuroFlowApp {
     }
 
     toggleAnimations(enabled) {
+        this.animationEnabled = enabled;
         if (this.threeRenderer?.domElement) {
             this.threeRenderer.domElement.style.animation = enabled ? 'pulse 2s infinite' : 'none';
         }
